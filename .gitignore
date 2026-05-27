@@ -1,0 +1,19 @@
+# Python / Django
+venv/
+__pycache__/
+*.pyc
+*.sqlite3
+/escolaire/media/
+
+# Secrets
+.env
+
+# Node / React
+node_modules/
+dist/
+.vite/
+
+# Éditeur / OS
+.vscode/
+.claude/
+.DS_Store
