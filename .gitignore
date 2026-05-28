@@ -17,3 +17,8 @@ dist/
 .vscode/
 .claude/
 .DS_Store
+
+# Fichiers Excel de test (peuvent contenir des données personnelles)
+admis_test.xlsx
+~$*.xlsx
+*_test.xlsx
