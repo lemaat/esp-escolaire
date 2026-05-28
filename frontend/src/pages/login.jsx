@@ -12,27 +12,38 @@ export default function Login() {
     setError('');
 
     try {
-      // Appel à l'API Django que tu as configurée dans accounts/urls.py
-      const response = await fetch('http://127.0.0.1:8000/accounts/api/login/', {
+      const response = await fetch('http://localhost:8000/accounts/api/login/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),   // ← ajouter
+        },
+        credentials: 'include',
         body: JSON.stringify({ username, password }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        // Enregistre le nom et le rôle localement dans le navigateur
         localStorage.setItem('userRole', data.role);
         localStorage.setItem('username', data.username);
 
-        // Redirection intelligente selon le rôle de l'ESP
+        // --- NOUVEAU : forçage du changement de mot de passe ---
+        // Si l'admis (ou n'importe qui) a un mot de passe temporaire,
+        // on le redirige AVANT tout vers l'écran de changement.
+        if (data.doit_changer_mdp) {
+          navigate('/changer-mot-de-passe');
+          return; // on s'arrête là, pas de redirection vers un dashboard
+        }
+
+        // Redirection normale selon le rôle
         if (data.role === 'ETUDIANT') navigate('/espace-etudiant');
         else if (data.role === 'PROFESSEUR') navigate('/espace-professeur');
         else if (data.role === 'CHEF_DEPT') navigate('/espace-chef-departement');
         else if (data.role === 'RESP_POLE') navigate('/espace-responsable-pole');
         else if (data.role === 'RESP_INSCRIPTION') navigate('/espace-responsable-inscription');
         else if (data.role === 'RESP_LOGEMENT') navigate('/espace-responsable-logement');
+        else if (data.role === 'ADMIS') navigate('/espace-inscription'); // admis ayant déjà changé son mdp
         else alert(`Connecté en tant que ${data.role}. Espace en cours de développement.`);
       } else {
         setError(data.erreur || 'Identifiants invalides');
@@ -43,34 +54,72 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-900">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
-        <h2 className="text-3xl font-extrabold text-center text-indigo-900 mb-2">Escolaire ESP</h2>
-        <p className="text-center text-gray-500 mb-6 text-sm">Gestion Académique Intégrée</p>
-        
-        {error && <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-sm">{error}</div>}
-        
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Matricule CNIM / ESP</label>
-            <input 
-              type="text" required value={username} onChange={e => setUsername(e.target.value)}
-              className="mt-1 block w-full p-2.5 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-              placeholder="Ex: 22045"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Mot de passe</label>
-            <input 
-              type="password" required value={password} onChange={e => setPassword(e.target.value)}
-              className="mt-1 block w-full p-2.5 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-          <button type="submit" className="w-full bg-indigo-950 text-white p-3 rounded-md font-semibold hover:bg-indigo-900 transition">
-            Se connecter
-          </button>
-        </form>
+    <div className="min-h-screen flex items-center justify-center bg-esp-green-dark px-4">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+
+        {/* Bandeau supérieur vert avec logo */}
+        <div className="bg-esp-green px-8 pt-8 pb-6 text-center">
+          <img
+            src="/logo-esp.png"
+            alt="Logo ESP"
+            className="mx-auto h-20 w-20 object-contain"
+          />
+          <h2 className="mt-4 text-2xl font-bold text-white">Escolaire ESP</h2>
+          <p className="mt-1 text-sm text-esp-green-light">
+            Gestion Académique Intégrée
+          </p>
+        </div>
+
+        {/* Corps du formulaire */}
+        <div className="px-8 py-8">
+          {error && (
+            <div className="mb-4 rounded-lg bg-red-50 border border-esp-red/30 p-3 text-sm text-esp-red">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-esp-ink">
+                Matricule CNIM / ESP
+              </label>
+              <input
+                type="text" required value={username}
+                onChange={e => setUsername(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-gray-300 p-2.5
+                  focus:border-esp-green focus:ring-2 focus:ring-esp-green/30 outline-none"
+                placeholder="Ex: 251023"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-esp-ink">
+                Mot de passe
+              </label>
+              <input
+                type="password" required value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="mt-1 block w-full rounded-lg border border-gray-300 p-2.5
+                  focus:border-esp-green focus:ring-2 focus:ring-esp-green/30 outline-none"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full rounded-lg bg-esp-green py-3 font-semibold text-white
+                hover:bg-esp-green-dark transition"
+            >
+              Se connecter
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
+}
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
 }
