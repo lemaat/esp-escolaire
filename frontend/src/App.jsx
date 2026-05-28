@@ -6,6 +6,9 @@ import ChefDeptDashboard from './pages/espaces/ChefDeptDashboard';
 import RespPoleDashboard from './pages/espaces/RespPoleDashboard';
 import RespInscriptionDashboard from './pages/espaces/RespInscriptionDashboard';
 import RespLogementDashboard from './pages/espaces/RespLogementDashboard';
+import InscriptionAdmis from './pages/espaces/InscriptionAdmis';
+import ChangerMotDePasse from './pages/ChangerMotDePasse';
+
 
 export default function App() {
   return (
@@ -18,7 +21,8 @@ export default function App() {
         <Route path="/espace-responsable-pole" element={<RespPoleDashboard />} />
         <Route path="/espace-responsable-inscription" element={<RespInscriptionDashboard />} />
         <Route path="/espace-responsable-logement" element={<RespLogementDashboard />} />
-        <Route path="/inscription-admis" element={<InscriptionAdmis />} />
+        <Route path="/espace-inscription" element={<InscriptionAdmis />} />
+        <Route path="/changer-mot-de-passe" element={<ChangerMotDePasse />} />
       </Routes>
     </Router>
   );
