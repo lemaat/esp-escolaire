@@ -1,5 +1,5 @@
 // frontend/src/pages/espaces/InscriptionAdmis.jsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import FormulaireUpload from "./FormulaireUpload";
 
 const ETAPES = [
@@ -19,7 +19,76 @@ const ETAPES = [
 
 export default function InscriptionAdmis() {
   const [etapeActuelle, setEtapeActuelle] = useState(1);
+  const [chargement, setChargement] = useState(true);
+
+  // === Au montage, on derive l'etape reelle depuis l'API ===
+  useEffect(() => {
+    const charger = async () => {
+      try {
+        // 1. Recuperer le profil pour connaitre le role et doit_changer_mdp
+        const resMe = await fetch("http://localhost:8000/accounts/api/me/", {
+          credentials: "include",
+        });
+        if (!resMe.ok) {
+          setChargement(false);
+          return;
+        }
+        const me = await resMe.json();
+
+        // Si deja etudiant -> etape finale
+        if (me.role === "ETUDIANT") {
+          setEtapeActuelle(3);
+          setChargement(false);
+          return;
+        }
+
+        // Si encore admis mais mdp pas change -> etape 0 (mais cas rare vu la redirection)
+        if (me.doit_changer_mdp) {
+          setEtapeActuelle(0);
+          setChargement(false);
+          return;
+        }
+
+        // 2. Recuperer l'etat du dossier pour savoir si tous les docs sont la
+        const resDossier = await fetch(
+          "http://localhost:8000/inscriptions/api/mon-dossier/",
+          { credentials: "include" },
+        );
+        if (resDossier.ok) {
+          const data = await resDossier.json();
+          const nbDocs = data.documents?.length || 0;
+
+          if (data.statut_dossier === "VALIDE") {
+            setEtapeActuelle(3);
+          } else if (nbDocs >= 4) {
+            // 4 documents televersees, en attente de validation resp
+            setEtapeActuelle(2);
+          } else {
+            // moins de 4 docs : encore en train de televersee
+            setEtapeActuelle(1);
+          }
+        } else {
+          setEtapeActuelle(1);
+        }
+      } catch (e) {
+        // En cas d'erreur, on suppose etape 1
+        setEtapeActuelle(1);
+      } finally {
+        setChargement(false);
+      }
+    };
+    charger();
+  }, []);
+
   const progression = (etapeActuelle / 3) * 100;
+
+  if (chargement) {
+    return (
+      <div className="min-h-screen bg-esp-surface flex items-center justify-center">
+        <p className="text-esp-muted">Chargement de ton dossier...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-esp-surface px-6 py-10">
@@ -39,22 +108,6 @@ export default function InscriptionAdmis() {
           </p>
         </div>
 
-        {/* === Boutons de test temporaires === */}
-        <div className="mt-4 flex justify-center gap-2">
-          <button
-            onClick={() => setEtapeActuelle((e) => Math.max(0, e - 1))}
-            className="rounded-lg bg-gray-200 px-3 py-1 text-xs text-esp-ink hover:bg-gray-300"
-          >
-            ← Précédent
-          </button>
-          <button
-            onClick={() => setEtapeActuelle((e) => Math.min(3, e + 1))}
-            className="rounded-lg bg-esp-gold px-3 py-1 text-xs text-esp-ink hover:bg-esp-gold-dark"
-          >
-            Étape suivante →
-          </button>
-        </div>
-
         {/* === Stepper avec 4 points équidistants === */}
         <div className="mt-10">
           <div className="relative">
@@ -71,7 +124,6 @@ export default function InscriptionAdmis() {
             {/* Les 4 points répartis uniformément */}
             <div className="relative flex justify-between items-start">
 
-              {/* Les 3 étapes-pastilles */}
               {ETAPES.map((etape, i) => {
                 const estFaite = i < etapeActuelle;
                 const estActive = i === etapeActuelle;
@@ -126,30 +178,56 @@ export default function InscriptionAdmis() {
         </div>
 
         {/* === Détail de l'étape en cours === */}
-        {etapeActuelle < ETAPES.length && (
+        {etapeActuelle === 1 && (
           <div className="mt-12 rounded-xl bg-white border border-esp-gold p-6 shadow-sm">
             <p className="text-xs font-bold uppercase tracking-wide text-esp-gold-dark">
               Étape en cours
             </p>
             <h3 className="mt-2 text-xl font-bold text-esp-green-dark">
-              {ETAPES[etapeActuelle].titre}
+              {ETAPES[1].titre}
             </h3>
             <p className="mt-2 text-esp-muted">
-              {ETAPES[etapeActuelle].desc}
+              {ETAPES[1].desc}
             </p>
-
-            {etapeActuelle === 1 && <FormulaireUpload />}
+            <FormulaireUpload />
           </div>
         )}
 
-        {/* Message final */}
-        {etapeActuelle >= ETAPES.length && (
+        {etapeActuelle === 2 && (
+          <div className="mt-12 rounded-xl bg-white border border-esp-gold p-6 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-wide text-esp-gold-dark">
+              Étape en cours
+            </p>
+            <h3 className="mt-2 text-xl font-bold text-esp-green-dark">
+              {ETAPES[2].titre}
+            </h3>
+            <p className="mt-2 text-esp-muted">
+              Tu as bien soumis les 4 documents. Le service des inscriptions est
+              en train de les examiner. Tu seras notifié dès que ton dossier sera validé.
+            </p>
+            <p className="mt-3 text-sm text-esp-muted">
+              Tu peux toujours <strong>remplacer un document non encore validé</strong> en
+              revenant à l'étape précédente.
+            </p>
+
+            {/* On affiche quand meme le formulaire pour qu'il puisse modifier */}
+            <div className="mt-6">
+              <FormulaireUpload />
+            </div>
+          </div>
+        )}
+
+        {/* Message final si dossier valide */}
+        {etapeActuelle >= 3 && (
           <div className="mt-12 rounded-xl bg-esp-green text-white p-6 shadow-sm text-center">
             <h3 className="text-xl font-bold">
               🎉 Inscription terminée !
             </h3>
             <p className="mt-2 text-esp-green-light">
               Tu es désormais officiellement étudiant de l'ESP.
+            </p>
+            <p className="mt-4 text-sm text-esp-green-light">
+              Reconnecte-toi pour accéder à ton espace étudiant.
             </p>
           </div>
         )}
