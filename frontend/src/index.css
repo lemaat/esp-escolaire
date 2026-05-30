@@ -32,3 +32,46 @@
   animation: wave 2.5s ease-in-out infinite;
   transform-origin: left center;
 }
+
+@import "tailwindcss";
+
+/* === Activer le mode sombre via la classe .dark sur <html> === */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* === Couleurs ESP — dérivées du logo === */
+
+  /* Vert : couleur primaire (boutons, liens, en-têtes) */
+  --color-esp-green: #1f7a3d;
+  --color-esp-green-dark: #14572a;
+  --color-esp-green-light: #e8f2ea;
+
+  /* Or : accent (highlights, étapes actives, badges) */
+  --color-esp-gold: #e3a72f;
+  --color-esp-gold-dark: #b8841f;
+
+  /* Rouge : SÉMANTIQUE UNIQUEMENT (erreurs, refus, déconnexion) */
+  --color-esp-red: #c0392b;
+
+  /* Neutres clair */
+  --color-esp-surface: #f4f7f4;
+  --color-esp-ink: #1c2b22;
+  --color-esp-muted: #5f6f64;
+
+  /* Neutres sombres (pour le dark mode) */
+  --color-esp-surface-dark: #0f1612;
+  --color-esp-ink-dark: #e8f2ea;
+  --color-esp-card-dark: #1a2620;
+}
+
+@keyframes wave {
+  0%, 100% { transform: rotate(0deg) skewY(0deg); }
+  25%      { transform: rotate(-2deg) skewY(-3deg); }
+  50%      { transform: rotate(1deg) skewY(2deg); }
+  75%      { transform: rotate(-1deg) skewY(-1deg); }
+}
+
+.animate-wave {
+  animation: wave 2.5s ease-in-out infinite;
+  transform-origin: left center;
+}
