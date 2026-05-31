@@ -106,7 +106,7 @@ Le projet utilise un modèle `Utilisateur` multi-rôles. Pour tester l'applicati
 Le rôle `ADMIS` est créé via le module d'inscriptions à partir d'un fichier Excel.
 
 1. Crée un fichier `escolaire/mon_test.xlsx` avec les colonnes :
-   `matricule | nom | prenom | email | voie | statut`
+   `matricule | nom | prenom | email | voie | statut | telephone`
    Et au moins une ligne avec `statut = admis` et **ton vrai email**.
 
 2. Lance l'import :
@@ -200,17 +200,12 @@ Toutes les couleurs sont dans `frontend/src/index.css` via la directive `@theme`
 |---|---|---|
 | Authentification & login | ✅ Terminé | Lemat |
 | Inscriptions (admis) | ✅ Terminé | Lemat |
-| Inscriptions (responsable) | 🔄 En cours | Lemat |
-| Académique (notes) | ⏳ À démarrer | À attribuer |
-| Logement | ⏳ À démarrer | À attribuer |
+| Inscriptions (responsable) | ✅ Terminé | Lemat |
+| Académique (notes) | 🔄 En cours | Moctar, Mariem |
+| Logement | 🔄 En cours | Sara |
 | Réclamations | ⏳ À démarrer | À attribuer |
 | Ressources | ⏳ À démarrer | À attribuer |
-| UI/UX dashboards | 🔄 Squelettes | À attribuer |
+| UI/UX dashboards | 🔄 Squelettes | Toute l'équipe |
 
 Voir `escolaire_esp_avancement.pdf` pour le détail des tâches attribuables.
 
----
-
-## Contact
-
-Développeur principal : **Lemat Tacky** (esp-escolaire@github)
