@@ -11,8 +11,8 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('inscriptions/', include('inscriptions.urls')), 
     # Au fur et à mesure du projet, vos camarades ajouteront leurs routes d'API ici :
-    # path('inscriptions/', include('inscriptions.urls')),
-    # path('academique/', include('academique.urls')),
+     #path('inscriptions/', include('inscriptions.urls')),
+     path('academique/', include('academique.urls')),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
