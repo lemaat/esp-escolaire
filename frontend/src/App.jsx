@@ -8,8 +8,8 @@ import RespInscriptionDashboard from './pages/espaces/RespInscriptionDashboard';
 import RespLogementDashboard from './pages/espaces/RespLogementDashboard';
 import InscriptionAdmis from './pages/espaces/InscriptionAdmis';
 import ChangerMotDePasse from './pages/ChangerMotDePasse';
-import DetailDossierResp from "./pages/espaces/DetailDossierResp";
-
+import LogementEtudiant from './pages/espaces/logement/LogementEtudiant';
+import LogementAdmin from './pages/espaces/logement/LogementAdmin';
 
 
 export default function App() {
@@ -22,9 +22,12 @@ export default function App() {
         <Route path="/espace-chef-departement" element={<ChefDeptDashboard />} />
         <Route path="/espace-responsable-pole" element={<RespPoleDashboard />} />
         <Route path="/espace-responsable-inscription" element={<RespInscriptionDashboard />} />
+        <Route path="/espace-responsable-logement" element={<RespLogementDashboard />} />
         <Route path="/espace-inscription" element={<InscriptionAdmis />} />
         <Route path="/changer-mot-de-passe" element={<ChangerMotDePasse />} />
-        <Route path="/espace-responsable-inscription/dossier/:matricule" element={<DetailDossierResp />}/>
+        {/* Module Logement */}
+        <Route path="/logement-etudiant" element={<LogementEtudiant />} />
+        <Route path="/logement-admin" element={<LogementAdmin />} />
       </Routes>
     </Router>
   );

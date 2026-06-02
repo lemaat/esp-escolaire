@@ -1,8 +1,17 @@
 from django.contrib.auth import authenticate, login, logout
+from django.middleware.csrf import get_token
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
+
+class CSRFTokenAPIView(APIView):
+    """Retourne un cookie CSRF que React peut lire avant les POST."""
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        token = get_token(request)  # force la création du cookie csrftoken
+        return Response({'csrftoken': token})
 
 class ConnexionAPIView(APIView):
     """ Vue API pour connecter un utilisateur (gérée par React) """
