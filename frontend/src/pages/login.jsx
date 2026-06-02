@@ -12,11 +12,17 @@ export default function Login() {
     setError('');
 
     try {
+      // 1. Obtenir le cookie CSRF depuis Django
+      await fetch('http://localhost:8000/accounts/api/csrf/', {
+        credentials: 'include',
+      });
+
+      // 2. Lire le cookie et envoyer le login
       const response = await fetch('http://localhost:8000/accounts/api/login/', {
         method: 'POST',
         headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCookie('csrftoken'),   // ← ajouter
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
         },
         credentials: 'include',
         body: JSON.stringify({ username, password }),
@@ -28,22 +34,18 @@ export default function Login() {
         localStorage.setItem('userRole', data.role);
         localStorage.setItem('username', data.username);
 
-        // --- NOUVEAU : forçage du changement de mot de passe ---
-        // Si l'admis (ou n'importe qui) a un mot de passe temporaire,
-        // on le redirige AVANT tout vers l'écran de changement.
         if (data.doit_changer_mdp) {
           navigate('/changer-mot-de-passe');
-          return; // on s'arrête là, pas de redirection vers un dashboard
+          return;
         }
 
-        // Redirection normale selon le rôle
         if (data.role === 'ETUDIANT') navigate('/espace-etudiant');
         else if (data.role === 'PROFESSEUR') navigate('/espace-professeur');
         else if (data.role === 'CHEF_DEPT') navigate('/espace-chef-departement');
         else if (data.role === 'RESP_POLE') navigate('/espace-responsable-pole');
         else if (data.role === 'RESP_INSCRIPTION') navigate('/espace-responsable-inscription');
         else if (data.role === 'RESP_LOGEMENT') navigate('/espace-responsable-logement');
-        else if (data.role === 'ADMIS') navigate('/espace-inscription'); // admis ayant déjà changé son mdp
+        else if (data.role === 'ADMIS') navigate('/espace-inscription');
         else alert(`Connecté en tant que ${data.role}. Espace en cours de développement.`);
       } else {
         setError(data.erreur || 'Identifiants invalides');
@@ -52,6 +54,7 @@ export default function Login() {
       setError('Impossible de joindre le serveur Django. Lance "python manage.py runserver".');
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-esp-green-dark px-4">

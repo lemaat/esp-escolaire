@@ -13,7 +13,12 @@ class Utilisateur(AbstractUser):
     ]
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     telephone = models.CharField(max_length=20, blank=True)
-    doit_changer_mdp = models.BooleanField(default=False)  # ← ajouter
+    doit_changer_mdp = models.BooleanField(default=False) 
+    email_institutionnel = models.EmailField(
+        blank=True,
+        default="",
+        help_text="Email officiel ESP genere a la validation finale (matricule@esp.mr)",
+    )
     
     def __str__(self):
         return f"{self.username} - {self.role}"
@@ -34,6 +39,7 @@ class CandidatCNIM(models.Model):
     email = models.EmailField(unique=True)
     nom = models.CharField(max_length=100)
     prenom = models.CharField(max_length=100)
+    telephone = models.CharField(max_length=20, blank=True, default="")   # ← AJOUTER
     
     def __str__(self):
         return f"{self.matricule_cnim} - {self.nom} {self.prenom}"

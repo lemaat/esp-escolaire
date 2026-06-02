@@ -1,22 +1,31 @@
-import { useNavigate } from 'react-router-dom';
+// frontend/src/pages/espaces/RespPoleDashboard.jsx
+import { useEffect, useState } from "react";
+import EspaceLayout from "../../components/EspaceLayout";
+import { ConsultationNotes } from "./ChefDeptDashboard";
+
+const API = "http://localhost:8000";
 
 export default function RespPoleDashboard() {
-  const navigate = useNavigate();
+  const [data, setData] = useState(null);
+  const [chargement, setChargement] = useState(true);
+
+  useEffect(() => {
+    fetch(API + "/academique/api/resp-pole/notes/", { credentials: "include" })
+      .then((r) => r.json())
+      .then(setData)
+      .finally(() => setChargement(false));
+  }, []);
+
+  const menu = [{ label: "Notes du pôle", route: "/espace-responsable-pole", icone: "🎓" }];
+
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <div className="w-64 bg-slate-900 text-white p-6 space-y-6">
-        <h1 className="text-xl font-bold border-b border-slate-800 pb-4">Direction des Pôles</h1>
-        <nav className="space-y-2">
-          <a href="#" className="block py-2.5 px-4 rounded bg-slate-800">Vue Troncs Communs</a>
-          <a href="#" className="block py-2.5 px-4 rounded hover:bg-slate-800 transition">Emplois du temps</a>
-        </nav>
-        <button onClick={() => { localStorage.clear(); navigate('/'); }} className="w-full text-left py-2.5 px-4 text-red-400 hover:bg-red-950 rounded transition">
-          Déconnexion
-        </button>
-      </div>
-      <div className="flex-1 p-10">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6">Gestion des Pôles (HE / ST)</h2>
-      </div>
-    </div>
+    <EspaceLayout titre="Responsable de Pôle" sousTitre="Module Académique" menu={menu}>
+      <ConsultationNotes
+        chargement={chargement}
+        data={data}
+        titre="Suivi des notes du pôle"
+        etiquette={data?.pole ? `Pôle ${data.pole}` : null}
+      />
+    </EspaceLayout>
   );
 }

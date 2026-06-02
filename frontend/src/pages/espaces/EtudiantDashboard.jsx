@@ -1,56 +1,102 @@
-import { useNavigate } from 'react-router-dom';
+// frontend/src/pages/espaces/EtudiantDashboard.jsx
+import { useEffect, useState } from "react";
+import EspaceLayout from "../../components/EspaceLayout";
+
+const API = "http://localhost:8000";
 
 export default function EtudiantDashboard() {
-  const navigate = useNavigate();
-  const username = localStorage.getItem('username') || 'Étudiant';
+  const [semestres, setSemestres] = useState({});
+  const [chargement, setChargement] = useState(true);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    navigate('/');
-  };
+  useEffect(() => {
+    fetch(API + "/academique/api/etudiant/notes/", { credentials: "include" })
+      .then((r) => r.json())
+      .then((d) => setSemestres(d.semestres || {}))
+      .finally(() => setChargement(false));
+  }, []);
+
+  const menu = [{ label: "Mes notes", route: "/espace-etudiant", icone: "📊" }];
+  const aDesNotes = Object.keys(semestres).length > 0;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Barre latérale (Sidebar) */}
-      <div className="w-64 bg-indigo-950 text-white p-6 space-y-6">
-        <h1 className="text-xl font-bold border-b border-indigo-800 pb-4">Portail Étudiant</h1>
-        <nav className="space-y-2">
-          <a href="#" className="block py-2.5 px-4 rounded bg-indigo-900">Tableau de bord</a>
-          <a href="#" className="block py-2.5 px-4 rounded hover:bg-indigo-900 transition">Mes Notes</a>
-          <a href="#" className="block py-2.5 px-4 rounded hover:bg-indigo-900 transition">Demande de Logement</a>
-          <a href="#" className="block py-2.5 px-4 rounded hover:bg-indigo-900 transition">Réclamations</a>
-        </nav>
-        <button onClick={handleLogout} className="w-full text-left py-2.5 px-4 text-red-400 hover:bg-red-950 rounded transition">
-          Déconnexion
-        </button>
-      </div>
+    <EspaceLayout titre="Portail Étudiant" sousTitre="Module Académique" menu={menu}>
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-2xl font-bold text-esp-ink dark:text-white">Mes notes</h1>
+        <p className="text-esp-muted dark:text-gray-400 mt-1">
+          Vos notes publiées, regroupées par semestre. Les notes non publiées n'apparaissent pas.
+        </p>
 
-      {/* Zone de contenu principale */}
-      <div className="flex-1 p-10">
-        <header className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-800">Bienvenue, {username} 👋</h2>
-          <span className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-semibold">Année 1 - Tronc Commun</span>
-        </header>
+        {chargement ? (
+          <p className="mt-6 text-esp-muted">Chargement…</p>
+        ) : !aDesNotes ? (
+          <div className="mt-8 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 p-10 text-center">
+            <p className="text-esp-muted">Aucune note publiée pour le moment.</p>
+            <p className="text-sm text-esp-muted mt-1">Vos notes apparaîtront ici dès qu'un enseignant les aura publiées.</p>
+          </div>
+        ) : (
+          Object.entries(semestres).map(([sem, bloc]) => (
+            <section key={sem} className="mt-8">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-esp-ink dark:text-white">
+                  Semestre {sem.replace("S", "")}
+                </h2>
+                {bloc.moyenne_semestre != null && (
+                  <span className={`text-sm font-semibold px-3 py-1 rounded-full ${classeNote(bloc.moyenne_semestre)}`}>
+                    Moyenne : {bloc.moyenne_semestre.toFixed(2)} / 20
+                  </span>
+                )}
+              </div>
 
-        {/* Grille d'actions rapides (Sprint 2 préliminaire) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
-            <h3 className="font-bold text-lg text-gray-700 mb-2">Suivi Académique</h3>
-            <p className="text-gray-500 text-sm mb-4">Consultez vos notes de devoirs et d'examens.</p>
-            <button className="text-indigo-600 font-semibold text-sm hover:underline">Voir mes notes →</button>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
-            <h3 className="font-bold text-lg text-gray-700 mb-2">Campus & Hébergement</h3>
-            <p className="text-gray-500 text-sm mb-4">Vérifiez le statut de votre affectation de chambre.</p>
-            <button className="text-indigo-600 font-semibold text-sm hover:underline">Gérer mon logement →</button>
-          </div>
-          <div className="bg-white p-6 rounded-lg shadow border border-gray-100">
-            <h3 className="font-bold text-lg text-gray-700 mb-2">Secrétariat Numérique</h3>
-            <p className="text-gray-500 text-sm mb-4">Téléchargez vos attestations scolaires officielles.</p>
-            <button className="text-indigo-600 font-semibold text-sm hover:underline">Faire une demande →</button>
-          </div>
-        </div>
+              <div className="mt-4 space-y-3">
+                {bloc.matieres.map((m) => (
+                  <div
+                    key={m.code}
+                    className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-esp-card-dark overflow-hidden"
+                  >
+                    <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-700">
+                      <div>
+                        <span className="font-bold text-esp-ink dark:text-white">{m.code}</span>
+                        <span className="text-esp-muted dark:text-gray-400 text-sm ml-2">{m.nom}</span>
+                      </div>
+                      {m.moyenne != null && (
+                        <span className={`text-sm font-semibold px-3 py-1 rounded-full ${classeNote(m.moyenne)}`}>
+                          {m.moyenne.toFixed(2)}
+                        </span>
+                      )}
+                    </div>
+                    <table className="w-full text-sm">
+                      <tbody>
+                        {m.notes.map((n, i) => (
+                          <tr key={i} className="border-b border-gray-50 dark:border-gray-700/50 last:border-0">
+                            <td className="px-5 py-2.5 text-esp-ink dark:text-white">{n.evaluation}</td>
+                            <td className="px-5 py-2.5 text-esp-muted text-xs">{libelleType(n.type)}</td>
+                            <td className="px-5 py-2.5 text-esp-muted text-xs">coef {n.coefficient}</td>
+                            <td className="px-5 py-2.5 text-right">
+                              <span className={`font-semibold px-2.5 py-1 rounded-lg ${classeNote(n.valeur)}`}>
+                                {n.valeur} / 20
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ))
+        )}
       </div>
-    </div>
+    </EspaceLayout>
   );
+}
+
+/* Couleur de la note : rouge si eliminatoire (<8), vert si >=10, or entre les deux */
+function classeNote(v) {
+  if (v < 8) return "bg-red-50 text-esp-red";
+  if (v >= 10) return "bg-esp-green-light text-esp-green-dark";
+  return "bg-amber-50 text-esp-gold-dark";
+}
+function libelleType(t) {
+  return { DEVOIR: "Devoir", EXAMEN: "Examen", TP: "TP" }[t] || t;
 }

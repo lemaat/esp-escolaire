@@ -10,8 +10,8 @@ urlpatterns = [
     # Inclusion des routes d'API de votre application accounts
     path('accounts/', include('accounts.urls')),
     path('inscriptions/', include('inscriptions.urls')), 
+    path('logement/', include('logement.urls')),
     # Au fur et à mesure du projet, vos camarades ajouteront leurs routes d'API ici :
-    # path('inscriptions/', include('inscriptions.urls')),
     # path('academique/', include('academique.urls')),
 ]
 if settings.DEBUG:

@@ -3,9 +3,22 @@ from django.db import models
 from django.conf import settings
 
 
+import os
+import uuid
+
 def chemin_document(instance, filename):
+    """
+    Stocke chaque fichier avec un nom propre, sans caracteres speciaux.
+    Format : documents/<matricule>/<type_document>_<uuid>.<extension>
+    Exemple : documents/251023/CNI_RECTO_a3f9b2c1.jpg
+    """
     matricule = instance.dossier.admis.username
-    return f"documents/{matricule}/{filename}"
+    # Recuperer l'extension originale (jpg, png, pdf)
+    _, extension = os.path.splitext(filename)
+    extension = extension.lower()
+    # Generer un nom propre
+    nom_propre = f"{instance.type_document}_{uuid.uuid4().hex[:8]}{extension}"
+    return f"documents/{matricule}/{nom_propre}"
 
 
 class DossierInscription(models.Model):
