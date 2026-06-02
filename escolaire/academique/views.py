@@ -220,6 +220,41 @@ class PublierEvaluationAPIView(APIView):
         return Response({"message": "Evaluation publiee.", "publiee": True})
 
 
+class MatiereEvaluationsAPIView(APIView):
+    """GET : liste des evaluations d'une matiere appartenant au prof connecte."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, matiere_id):
+        user = request.user
+        if user.role != "PROFESSEUR":
+            return Response({"erreur": "Action reservee aux professeurs."}, status=403)
+
+        try:
+            matiere = Matiere.objects.get(id=matiere_id, professeur=user)
+        except Matiere.DoesNotExist:
+            return Response(
+                {"erreur": "Matiere introuvable ou ne vous appartient pas."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        evals = [
+            {
+                "id": e.id,
+                "titre": e.titre,
+                "type_evaluation": e.type_evaluation,
+                "date": e.date,
+                "coefficient": float(e.coefficient),
+                "publiee": e.publiee,
+                "nb_notes": e.notes.count(),
+            }
+            for e in matiere.evaluations.order_by("date")
+        ]
+        return Response({
+            "matiere": {"id": matiere.id, "code": matiere.code, "nom": matiere.nom},
+            "evaluations": evals,
+        })
+
+
 # =====================================================================
 #  COTE ETUDIANT
 # =====================================================================

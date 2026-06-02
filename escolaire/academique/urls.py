@@ -5,6 +5,7 @@ from .views import (
     CreerEvaluationAPIView,
     GrilleNotesAPIView,
     PublierEvaluationAPIView,
+    MatiereEvaluationsAPIView,
     MesNotesEtudiantAPIView,
     NotesChefDeptAPIView,
     NotesRespPoleAPIView,
@@ -15,6 +16,7 @@ app_name = "academique"
 urlpatterns = [
     # --- Cote professeur ---
     path("api/prof/matieres/", MesMatieresAPIView.as_view(), name="api_prof_matieres"),
+    path("api/prof/matieres/<int:matiere_id>/evaluations/", MatiereEvaluationsAPIView.as_view(), name="api_prof_matiere_evaluations"),
     path("api/prof/evaluations/", CreerEvaluationAPIView.as_view(), name="api_prof_creer_evaluation"),
     path("api/prof/evaluations/<int:evaluation_id>/notes/", GrilleNotesAPIView.as_view(), name="api_prof_grille_notes"),
     path("api/prof/evaluations/<int:evaluation_id>/publier/", PublierEvaluationAPIView.as_view(), name="api_prof_publier"),
