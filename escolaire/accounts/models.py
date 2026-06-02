@@ -59,6 +59,10 @@ class ProfilEtudiant(models.Model):
         ('GC', 'Génie Civil'),
         ('TC', 'Tronc Commun'),
     ]
+    SEXE_CHOICES = [
+        ('M', 'Masculin'),
+        ('F', 'Féminin'),
+    ]
 
     user = models.OneToOneField(
         Utilisateur,
@@ -75,6 +79,18 @@ class ProfilEtudiant(models.Model):
     departement = models.CharField(max_length=10, choices=DEPARTEMENT_CHOICES, default='TC')
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='ACTIF')
     date_inscription = models.DateField(auto_now_add=True)
+    sexe = models.CharField(max_length=1, choices=SEXE_CHOICES, blank=True, default='')
+    date_naissance = models.DateField(null=True, blank=True)
+
+    @property
+    def age(self):
+        from datetime import date
+        if not self.date_naissance:
+            return None
+        today = date.today()
+        return today.year - self.date_naissance.year - (
+            (today.month, today.day) < (self.date_naissance.month, self.date_naissance.day)
+        )
 
     def __str__(self):
         return f"{self.user.username} - {self.departement} - Année {self.annee}"
