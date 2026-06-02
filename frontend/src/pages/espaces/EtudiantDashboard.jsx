@@ -15,7 +15,10 @@ export default function EtudiantDashboard() {
       .finally(() => setChargement(false));
   }, []);
 
-  const menu = [{ label: "Mes notes", route: "/espace-etudiant", icone: "📊" }];
+  const menu = [
+    { label: "Mes notes", route: "/espace-etudiant", icone: "📊" },
+    { label: "Logement", route: "/logement-etudiant", icone: "🏠" }
+  ];
   const aDesNotes = Object.keys(semestres).length > 0;
 
   return (
